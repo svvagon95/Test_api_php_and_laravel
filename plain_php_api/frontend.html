@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo API demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>To-Do API Demo (plain PHP)</h1>
+
+<form id="create-form">
+    <div>
+        <label>
+            Заголовок:<br>
+            <input type="text" id="title" required>
+        </label>
+    </div>
+    <div>
+        <label>
+            Описание:<br>
+            <textarea id="description"></textarea>
+        </label>
+    </div>
+    <button type="submit">Создать задачу</button>
+</form>
+
+<h2>Список задач</h2>
+<ul id="task-list"></ul>
+
+<script>
+    const API_URL = 'http://localhost:8000/tasks';
+
+    const form = document.getElementById('create-form');
+    const titleInput = document.getElementById('title');
+    const descInput = document.getElementById('description');
+    const listEl = document.getElementById('task-list');
+
+    async function loadTasks() {
+        const res = await fetch(API_URL);
+        const tasks = await res.json();
+        renderTasks(tasks);
+    }
+
+    function renderTasks(tasks) {
+        listEl.innerHTML = '';
+        tasks.forEach(task => {
+            const li = document.createElement('li');
+
+            const main = document.createElement('div');
+            main.className = 'task-main';
+
+            const title = document.createElement('div');
+            title.textContent = `#${task.id}: ${task.title}`;
+            title.className = 'task-title';
+            if (task.status === 'done') {
+                title.classList.add('done');
+            }
+
+            const desc = document.createElement('div');
+            desc.textContent = task.description || '';
+
+            const status = document.createElement('div');
+            status.textContent = `Статус: ${task.status}`;
+
+            main.appendChild(title);
+            main.appendChild(desc);
+            main.appendChild(status);
+
+            const buttons = document.createElement('div');
+            buttons.className = 'buttons';
+
+            const doneBtn = document.createElement('button');
+            doneBtn.textContent = 'Выполнено';
+            doneBtn.onclick = () => updateTaskStatus(task.id, 'Выполнено');
+
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Удалить';
+            delBtn.onclick = () => deleteTask(task.id);
+
+            buttons.appendChild(doneBtn);
+            buttons.appendChild(delBtn);
+
+            li.appendChild(main);
+            li.appendChild(buttons);
+
+            listEl.appendChild(li);
+        });
+    }
+
+    async function createTask(title, description) {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ title, description })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert('Ошибка при создании: ' + (err.error || res.status));
+            return;
+        }
+
+        await loadTasks();
+    }
+
+    async function updateTaskStatus(id, status) {
+        const res = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status })
+        });
+
+        if (!res.ok) {
+            alert('Ошибка при обновлении');
+            return;
+        }
+
+        await loadTasks();
+    }
+
+    async function deleteTask(id) {
+        if (!confirm('Удалить задачу #' + id + '?')) return;
+
+        const res = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) {
+            alert('Ошибка при удалении');
+            return;
+        }
+
+        await loadTasks();
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = titleInput.value.trim();
+        const desc = descInput.value.trim();
+
+        if (!title) {
+            alert('Введите заголовок');
+            return;
+        }
+
+        await createTask(title, desc);
+        titleInput.value = '';
+        descInput.value = '';
+    });
+
+    loadTasks();
+</script>
+
+</body>
+</html>

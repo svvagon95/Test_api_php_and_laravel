@@ -1,0 +1,55 @@
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+form {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+input, textarea, button, select {
+    font: inherit;
+    margin: 4px 0;
+    padding: 6px 8px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 60px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-main {
+    max-width: 70%;
+}
+
+.task-title.done {
+    text-decoration: line-through;
+    color: #777;
+}
+
+.buttons button {
+    margin-left: 8px;
+}
